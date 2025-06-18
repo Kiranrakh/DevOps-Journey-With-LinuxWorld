@@ -1,0 +1,381 @@
+## Kubernetes (15 Questions with Answers)
+
+1. **What is a Pod?**
+
+   * A Pod is the smallest deployable unit in Kubernetes that can contain one or more containers sharing storage, IP, and namespace.
+
+2. **Difference between Deployment and StatefulSet?**
+
+   * Deployment manages stateless applications; StatefulSet manages stateful apps with persistent identities.
+
+3. **What are ConfigMaps and Secrets?**
+
+   * ConfigMaps store configuration data. Secrets store sensitive information like passwords encoded in base64.
+
+4. **How does a Service work in Kubernetes?**
+
+   * Services expose Pods using a stable IP and DNS, abstracting the Pod lifecycle.
+
+5. **What is a DaemonSet?**
+
+   * Ensures that a copy of a pod runs on all or specific nodes in the cluster.
+
+6. **What are `livenessProbe` and `readinessProbe`?**
+
+   * Liveness checks if a pod should be restarted. Readiness checks if the pod is ready to serve traffic.
+
+7. **How do you scale a Deployment?**
+
+   * `kubectl scale deployment myapp --replicas=3`
+
+8. **How to update a Deployment?**
+
+   * Modify the deployment YAML and run `kubectl apply -f deployment.yaml`
+
+9. **What is ReplicaSet?**
+
+   * It ensures the desired number of pod replicas are running.
+
+10. **`kubectl apply` vs `kubectl create`?**
+
+    * `apply` updates existing resources; `create` is only for new resources.
+
+11. **How to troubleshoot a CrashLoopBackOff?**
+
+    * Use `kubectl describe pod` and `kubectl logs` to check error details.
+
+12. **What is PersistentVolume and PVC?**
+
+    * PV is storage provisioned by the admin; PVC is a request for storage by a user.
+
+13. **What are Namespaces?**
+
+    * Logical partitions of a Kubernetes cluster to isolate resources.
+
+14. **How do you exec into a running pod?**
+
+    * `kubectl exec -it pod-name -- /bin/bash`
+
+15. **How to expose service using NodePort?**
+
+    * Create a service with type: NodePort and access it via NodeIP\:Port
+
+---
+
+## Linux (15 Questions with Answers)
+
+1. **Check memory and disk usage?**
+
+   * `free -h`, `df -h`, `top`, `htop`
+
+2. **Manage services in Linux?**
+
+   * `systemctl start/stop/status service-name`
+
+3. **Difference between hard and soft link?**
+
+   * Hard link: Points directly to inode; Soft link: A symbolic reference to another file.
+
+4. **Schedule jobs with `cron`?**
+
+   * `crontab -e` and use syntax like `0 * * * * /path/script.sh`
+
+5. **Change file permissions?**
+
+   * `chmod`, `chown`, `umask`
+
+6. **Find large files?**
+
+   * `du -ah / | sort -rh | head -n 10`
+
+7. **Kill a process?**
+
+   * `ps aux | grep process`, then `kill -9 PID`
+
+8. **Process vs thread?**
+
+   * Process is an independent execution; threads share the same memory space.
+
+9. **Text processing tools?**
+
+   * `grep`, `awk`, `sed`
+
+10. **Add user & set password?**
+
+    * `useradd username`, `passwd username`
+
+11. **Check system logs?**
+
+    * `cat /var/log/syslog`, `journalctl`
+
+12. **Check open ports?**
+
+    * `netstat -tuln`, `ss -tuln`
+
+13. **Archive files?**
+
+    * `tar -czvf archive.tar.gz folder/`
+
+14. **Environment variables?**
+
+    * `env`, `export VAR=value`
+
+15. **Check IP address?**
+
+    * `ip a`, `hostname -I`
+
+---
+
+## Docker (15 Questions with Answers)
+
+1. **What is Docker?**
+
+   * A tool to package, ship, and run applications in lightweight containers.
+
+2. **Image vs Container?**
+
+   * Image is a blueprint; Container is a running instance of an image.
+
+3. **Dockerfile instructions?**
+
+   * `FROM`, `COPY`, `RUN`, `CMD`, `ENTRYPOINT`, `EXPOSE`, `WORKDIR`
+
+4. **.dockerignore purpose?**
+
+   * Excludes files from being copied into the Docker image.
+
+5. **Custom Docker image?**
+
+   * Write a Dockerfile and run `docker build -t name .`
+
+6. **Persist data?**
+
+   * Use volumes: `docker run -v data:/path container`
+
+7. **CMD vs ENTRYPOINT?**
+
+   * CMD is default command; ENTRYPOINT is always executed.
+
+8. **View container logs?**
+
+   * `docker logs container_id`
+
+9. **Expose vs -p?**
+
+   * `EXPOSE` is metadata; `-p` binds ports during run.
+
+10. **Inspect container?**
+
+    * `docker inspect container_id`
+
+11. **Multi-stage build?**
+
+    * Use multiple `FROM` statements to reduce final image size.
+
+12. **Clean up Docker?**
+
+    * `docker system prune -a`
+
+13. **Connect containers?**
+
+    * Use user-defined bridge networks.
+
+14. **Docker networks?**
+
+    * Bridge (default), Host, Overlay (Swarm)
+
+15. **Namespaces and cgroups?**
+
+    * Used to provide isolation and resource limits.
+
+---
+
+## Git (15 Questions with Answers)
+
+1. **Git vs GitHub?**
+
+   * Git: version control system; GitHub: platform for Git repositories.
+
+2. **`git init`?**
+
+   * Initializes a new Git repository.
+
+3. **Commit vs Push?**
+
+   * Commit: local change; Push: send to remote repo.
+
+4. **`git pull` vs `git fetch`?**
+
+   * Pull = fetch + merge; Fetch only downloads.
+
+5. **`.gitignore`?**
+
+   * File that tells Git which files to ignore.
+
+6. **Branching?**
+
+   * Create: `git branch dev`; Switch: `git checkout dev`
+
+7. **Merge branches?**
+
+   * `git checkout main`, `git merge dev`
+
+8. **Resolve merge conflict?**
+
+   * Edit file manually, `git add`, `git commit`
+
+9. **Undo a commit?**
+
+   * `git reset --soft HEAD~1`
+
+10. **Stash?**
+
+    * Temporarily saves changes: `git stash`, `git stash pop`
+
+11. **Rebase vs Merge?**
+
+    * Rebase rewrites history; Merge preserves all commits.
+
+12. **Tag a version?**
+
+    * `git tag v1.0`, `git push origin v1.0`
+
+13. **Local vs Remote branch?**
+
+    * Local = on your machine; Remote = on Git server
+
+14. **View history?**
+
+    * `git log`, `git log --oneline`
+
+15. **Hooks in Git?**
+
+    * Scripts run on Git actions (e.g., pre-commit)
+
+---
+
+## Docker Compose (15 Questions with Answers)
+
+1. **What is Docker Compose?**
+
+   * A tool to define and run multi-container applications.
+
+2. **Structure of docker-compose.yml?**
+
+   * Contains services, networks, volumes, build context.
+
+3. **Multiple services?**
+
+   * Each service under `services:` with image/build.
+
+4. **depends\_on?**
+
+   * Specifies service dependencies.
+
+5. **Build from Dockerfile?**
+
+   * Use `build: .` under the service.
+
+6. **Connect services?**
+
+   * Use same custom network.
+
+7. **Default network type?**
+
+   * A bridge network is created by default.
+
+8. **Pass environment variables?**
+
+   * Use `environment:` or `.env` file.
+
+9. **.env file usage?**
+
+   * Variables used in `docker-compose.yml` like `${DB_HOST}`
+
+10. **Volumes vs Bind Mounts?**
+
+    * Volumes: managed by Docker; Bind Mounts: link to host directories.
+
+11. **Scale services?**
+
+    * `docker-compose up --scale web=3`
+
+12. **Restart service?**
+
+    * `docker-compose restart service_name`
+
+13. **`docker-compose up --build`?**
+
+    * Rebuilds images before starting containers.
+
+14. **Override services?**
+
+    * Use multiple `docker-compose.override.yml` files.
+
+15. **Debug failed containers?**
+
+    * `docker-compose logs`, `docker-compose ps`
+
+---
+
+## Resume-Based / DevOps Thinking / HR (15 Questions with Answers)
+
+1. **Tell me about yourself.**
+
+   * I'm a DevOps intern skilled in AWS, Docker, Kubernetes, Ansible, and CI/CD pipelines. I’ve worked on full-stack deployment and monitoring projects.
+
+2. **Why DevOps?**
+
+   * I love automation, reliability, and working on scalable solutions. DevOps brings development and operations together.
+
+3. **Favorite tools?**
+
+   * Jenkins, Ansible, Docker, Kubernetes, GitHub, Prometheus, Grafana.
+
+4. **Biggest challenge?**
+
+   * Fixing CrashLoopBackOff in a MySQL pod due to incorrect volume mount. Solved by correcting PVC references.
+
+5. **How do you debug prod issues?**
+
+   * Logs, `kubectl describe/logs`, checking probe status, container logs.
+
+6. **CI/CD process?**
+
+   * Git push → Jenkins pipeline → Docker build → Ansible deployment → Kubernetes rollout
+
+7. **How do you collaborate?**
+
+   * Git for code, Slack for communication, Jenkins + feedback loops.
+
+8. **What is IaC?**
+
+   * Infrastructure as Code — provisioning infra via code (e.g., Ansible, Terraform)
+
+9. **Secure secrets in CI/CD?**
+
+   * Use vaults, GitHub secrets, Kubernetes secrets
+
+10. **Stay updated?**
+
+    * Blogs, webinars, labs, hands-on projects
+
+11. **Strengths?**
+
+    * Fast learner, problem solver, disciplined
+
+12. **Weaknesses?**
+
+    * Initially too detailed; now I balance speed + quality
+
+13. **Proud project?**
+
+    * LAMP stack on Kubernetes using Ansible with zero DockerHub usage
+
+14. **How do you handle pressure?**
+
+    * I break problems into steps, automate where possible, ask for help when needed
+
+15. **Career goal?**
+
+    * Become a cloud-native DevOps Engineer managing full-scale production CI/CD workflows
