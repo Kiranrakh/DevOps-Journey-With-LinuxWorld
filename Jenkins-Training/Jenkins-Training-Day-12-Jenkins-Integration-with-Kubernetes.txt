@@ -1,0 +1,105 @@
+===============================
+Jenkins Integration with Kubernetes
+===============================
+
+📘 OVERVIEW
+-------------------
+This document outlines the steps to integrate Jenkins with Kubernetes, enabling dynamic provisioning of Jenkins agents on Kubernetes pods.
+
+✅ PURPOSE:
+-------------------
+To achieve scalable, containerized CI/CD workflows using Jenkins and Kubernetes. Jenkins master runs as a deployment and spawns agents as Kubernetes pods on demand.
+
+🧰 PREREQUISITES:
+-------------------
+- Running Kubernetes Cluster (Minikube, Kubeadm, or kOps on EC2)
+- Jenkins server installed (VM/EC2/Container)
+- kubectl access on Jenkins master
+- Service Account with RBAC in Kubernetes
+
+⚙️ STEP-BY-STEP SETUP
+===============================
+
+🔧 ENVIRONMENT SETUP (Using kOps)
+---------------------------------
+1️⃣ Setup on `dev en2-ec2`:
+   - Install kops and kubectl
+
+2️⃣ IAM & S3:
+   - Create IAM role with S3 access
+   - Create S3 bucket (e.g., LWjenkins.in.k8s)
+   - Export env variables:
+     export KOPS_STATE_STORE=s3://LWjenkins.in.k8s
+     export KOPS_CLUSTER_NAME=jenkinstraining
+   - Save these in: /root/.bashrc
+
+3️⃣ SSH Key:
+   ssh-keygen
+
+4️⃣ Route53 & VPC:
+   - Create hosted zone: jenkinstraining
+   - Public or Private (based on use case)
+   - Create VPC in required region
+
+5️⃣ Create Kubernetes Cluster:
+   kops create cluster \\
+     --name=jenkinstraining \\
+     --state=${KOPS_STATE_STORE} \\
+     --zones=us-east-1a \\
+     --node-count=2 \\
+     --master-count=1 \\
+     --node-size=t3.medium \\
+     --master-size=t3.medium \\
+     --dns-zone=jenkinstraining \\
+     --yes
+
+6️⃣ Get Cluster Info:
+   kops get cluster
+   kops get instancegroups
+
+📦 Extract Master & Node Info:
+   kops get instancegroups --name jenkinstraining
+
+🚀 JENKINS DEPLOYMENT TO KUBERNETES
+====================================
+
+1️⃣ Access Jenkins:
+   - Login to Jenkins UI
+
+2️⃣ Verify Kubernetes from Jenkins Server:
+   kubectl get nodes
+
+3️⃣ Deploy Sample App:
+   kubectl create deployment webapp --image=kiran22222/kiran-web-app:v1
+   kubectl expose deployment webapp --port=80 --type=NodePort
+   kubectl scale deployment webapp --replicas=5
+
+4️⃣ Allow Traffic in SG:
+   - Allow port range 30000-32767 in EC2 SG
+
+5️⃣ Access App:
+   http://<public-node-ip>:<node-port>
+
+🛠️ Jenkins Pipeline Stage:
+-------------------------------
+Example:
+stage('Deploy to K8s') {
+  steps {
+    sh 'ssh -o StrictHostKeyChecking=no ec2-user@<ip> "kubectl create deployment webapp --image=kiran22222/kiran-web-app:v1"'
+    sh 'ssh ec2-user@<ip> "kubectl expose deployment webapp --port=80 --type=NodePort"'
+    sh 'ssh ec2-user@<ip> "kubectl scale deployment webapp --replicas=5"'
+  }
+}
+
+📌 NOTES:
+-------------
+- Use `sudo` with remote kubectl commands if needed
+- Ensure kubectl is configured on remote EC2
+
+✅ COMPLETED:
+-------------------
+Jenkins integrated with Kubernetes using kOps,
+deployment automated via Jenkins pipeline!
+```
+
+
