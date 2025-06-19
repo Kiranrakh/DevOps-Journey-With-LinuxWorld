@@ -1,0 +1,176 @@
+===============================================================
+                INTRODUCTION TO TERRAFORM
+===============================================================
+
+1. WHAT IS TERRAFORM?
+---------------------
+Terraform is an open-source Infrastructure as Code (IaC) tool developed by HashiCorp. 
+It allows you to provision, manage, and version cloud and on-prem infrastructure 
+safely and efficiently using declarative configuration files.
+
+2. WHY TERRAFORM IS USED?
+-------------------------
+✔ Automates infrastructure provisioning  
+✔ Provides consistent and repeatable deployments  
+✔ Enables infrastructure version control  
+✔ Supports multi-cloud deployments (AWS, Azure, GCP, etc.)  
+✔ Eliminates manual provisioning and reduces human error  
+
+3. WHAT IS INFRASTRUCTURE?
+--------------------------
+Infrastructure refers to the set of physical and virtual components (e.g., servers, 
+storage, network, databases) that support computing environments and applications.
+
+4. INFRASTRUCTURE AS CODE (IaC)
+-------------------------------
+Infrastructure as Code is the practice of managing and provisioning infrastructure 
+using code instead of manual processes. It allows automation, repeatability, and 
+version control, just like software development.
+
+Benefits of IaC:
+- Consistency
+- Speed
+- Reduced human error
+- Version-controlled infrastructure
+
+5. AWS CLOUDFORMATION VS TERRAFORM
+-----------------------------------
+| Feature               | AWS CloudFormation      | Terraform                      |
+|-----------------------|--------------------------|--------------------------------|
+| Platform Support       | AWS Only                | Multi-Cloud (AWS, Azure, etc.) |
+| Language               | JSON/YAML               | HashiCorp Configuration Language (HCL) |
+| Community Modules      | Limited to AWS          | Terraform Registry - Large Ecosystem |
+| Open Source            | No                      | Yes                            |
+
+6. WHAT IS HASHICORP CONFIGURATION LANGUAGE (HCL)?
+---------------------------------------------------
+HCL is a domain-specific language created by HashiCorp used to describe infrastructure 
+resources. It is easy to read and write, similar to JSON but more human-friendly.
+
+Example:
+```
+
+provider "aws" {
+region = "us-west-2"
+}
+
+resource "aws\_instance" "example" {
+ami           = "ami-0abcdef1234567890"
+instance\_type = "t2.micro"
+}
+
+```
+
+7. TERRAFORM WORKSTATION SETUP
+-------------------------------
+- System: Windows/Linux/Mac
+- Tools Required:
+  • Terraform binary
+  • Text editor (VSCode, Vim, etc.)
+  • Cloud CLI (e.g., AWS CLI)
+  • Internet access
+
+8. INSTALLING TERRAFORM
+------------------------
+Commands:
+
+# Linux:
+$ sudo apt update
+$ sudo apt install -y wget unzip
+$ wget https://releases.hashicorp.com/terraform/1.8.0/terraform_1.8.0_linux_amd64.zip
+$ unzip terraform_1.8.0_linux_amd64.zip
+$ sudo mv terraform /usr/local/bin/
+$ terraform -version
+
+# Windows:
+- Download from https://www.terraform.io/downloads.html
+- Unzip and set PATH environment variable
+
+9. TERRAFORM PLUGINS
+---------------------
+Plugins are external binaries that enable Terraform to interact with external APIs
+like AWS, Azure, Google Cloud, etc.
+
+Examples:
+- Provider plugins (aws, azurerm, google)
+- Provisioners (for configuration after resource creation)
+- Backends (for storing Terraform state)
+
+10. TERRAFORM REGISTRY
+-----------------------
+Official online repository of modules and providers.
+
+URL: https://registry.terraform.io/
+
+- Find reusable modules and provider plugins
+- Supports community and official modules
+- Easily integrate into your `.tf` files
+
+11. WHAT ARE PROVIDERS?
+------------------------
+Providers are responsible for managing the lifecycle of a resource. 
+
+Examples:
+- aws
+- azurerm
+- google
+- docker
+- kubernetes
+
+Declare a provider:
+```
+
+provider "aws" {
+region = "us-east-1"
+}
+
+```
+
+12. CREATING A TERRAFORM FILE (.tf)
+------------------------------------
+Create a file named `main.tf`
+
+Example:
+```
+
+provider "aws" {
+region = "us-west-1"
+}
+
+resource "aws\_s3\_bucket" "my\_bucket" {
+bucket = "my-terraform-bucket-kiran"
+acl    = "private"
+}
+
+```
+
+13. INITIALIZING TERRAFORM
+---------------------------
+Command:
+$ terraform init
+
+Purpose:
+- Downloads provider plugins
+- Initializes backend if configured
+- Prepares working directory for other commands
+
+14. WHAT ARE RESOURCES IN TERRAFORM?
+-------------------------------------
+Resources define the infrastructure components to be created.
+
+Examples:
+- aws_instance
+- aws_s3_bucket
+- aws_vpc
+
+Syntax:
+```
+
+resource "aws\_instance" "web" {
+ami           = "ami-0abcd12345"
+instance\_type = "t2.micro"
+}
+
+```
+
+
