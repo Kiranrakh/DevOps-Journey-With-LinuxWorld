@@ -1,0 +1,228 @@
+===============================================================
+        TERRAFORM: EC2 INSTANCE WITH EBS & PROVISIONING
+===============================================================
+
+1. EBS VOLUME (Elastic Block Store)
+-----------------------------------
+Amazon EBS is a block storage service for use with EC2. It provides persistent storage.
+
+Types:
+- gp2 / gp3 (General Purpose)
+- io1 / io2 (Provisioned IOPS)
+- sc1 / st1 (Cold / Throughput optimized)
+
+2. SSH USING KEY
+-----------------
+You can log into your EC2 instance using a private key (`.pem` file) and public key.
+
+Terraform allows using `key_name` and `key_pair` resource to assign SSH key to instances.
+
+3. LAUNCHING EC2 INSTANCE
+--------------------------
+Resource:
+resource "aws_instance" "example" {
+  ami           = "ami-xxxxxxx"
+  instance_type = "t2.micro"
+  key_name      = "my-key"
+  subnet_id     = "subnet-xxxxxx"
+}
+
+4. CREATING AND ATTACHING EBS VOLUME
+-------------------------------------
+Step 1: Create EBS Volume
+resource "aws_ebs_volume" "my_volume" {
+  availability_zone = "us-east-1a"
+  size              = 8
+  type              = "gp2"
+  tags = {
+    Name = "my-ebs-volume"
+  }
+}
+
+Step 2: Attach Volume to Instance
+resource "aws_volume_attachment" "ebs_att" {
+  device_name = "/dev/xvdf"
+  volume_id   = aws_ebs_volume.my_volume.id
+  instance_id = aws_instance.example.id
+  force_detach = true
+}
+
+5. aws_instance RESOURCE
+-------------------------
+This is used to create EC2 instances.
+- Required: AMI, instance_type, subnet_id, key_name
+- Optional: user_data, volume_tags, root_block_device, etc.
+
+6. aws_volume_attachment RESOURCE
+----------------------------------
+Used to attach existing EBS volume to a running instance.
+- Fields: instance_id, volume_id, device_name
+
+7. DATA SOURCES
+----------------
+Used to fetch data from existing resources.
+
+Example:
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/*ubuntu-20.04*"]
+  }
+}
+
+8. CONFIGURING WEBSERVER (e.g., NGINX)
+---------------------------------------
+Use `user_data` or provisioner with shell script.
+
+Example:
+#!/bin/bash
+sudo apt update
+sudo apt install -y nginx
+sudo systemctl start nginx
+
+9. REMOTE-EXEC PROVISIONER
+---------------------------
+Executes commands on the remote EC2 instance after creation.
+
+Example:
+provisioner "remote-exec" {
+  inline = [
+    "sudo apt update",
+    "sudo apt install -y nginx"
+  ]
+}
+
+10. CONNECTION KEYWORD
+-----------------------
+Defines how Terraform connects to the instance.
+
+Example:
+connection {
+  type        = "ssh"
+  user        = "ubuntu"
+  private_key = file("~/.ssh/my-key.pem")
+  host        = self.public_ip
+}
+
+11. AUTOMATING LOGIN
+---------------------
+Terraform automatically logs into the EC2 instance using the connection block.
+Make sure the instance is accessible (security group allows SSH, key is valid).
+
+12. inline[]
+-------------
+Used inside remote-exec to run multiple commands in order.
+
+inline = [
+  "command 1",
+  "command 2"
+]
+
+13. null_resource
+------------------
+A resource to trigger provisioners without creating any real infrastructure.
+
+Example:
+resource "null_resource" "example" {
+  provisioner "local-exec" {
+    command = "echo Hello from Terraform!"
+  }
+}
+
+14. command KEYWORD
+--------------------
+Used with `local-exec` or `remote-exec` provisioners to run scripts/commands.
+
+Example:
+provisioner "local-exec" {
+  command = "echo Deployment Completed"
+}
+
+===============================================================
+        END OF EC2 + EBS + PROVISIONING CONCEPTS
+===============================================================
+
+====================== Hand-on with Vimal Sir ============================
+
+main.tf  --->
+
+provider "aws" {
+  region = "ap-south-1"
+}
+
+# Create a key pair to login manually from AWS UI
+# Create Security Group manually from AWS UI
+
+resource "aws_instance" "myweb" {
+  ami           = ""
+  instance_type = "t2.micro"
+  key_name      = ""
+  security_groups = [""]
+
+  tags = {
+    Name = ""
+  }
+}
+
+# Optional output
+# output "AZ" {
+#   value = aws_instance.myweb.availability_zone
+# }
+
+resource "aws_ebs_volume" "ebs1" {
+  size              = 2
+  availability_zone = aws_instance.myweb.availability_zone
+  tags = {
+    Name = ""
+  }
+}
+
+resource "aws_volume_attachment" "ebs1_attac" {
+  device_name = "/dev/sbd"
+  volume_id   = aws_ebs_volume.ebs1.id
+  instance_id = aws_instance.myweb.id
+}
+
+# Commands to be run inside EC2 (done via remote-exec)
+# sudo fdisk -l
+# sudo mkfs.xfs /dev/<device-name>
+# sudo yum install httpd -y
+# cd /var/www/html/
+# sudo mount <device-name> /var/www/html
+# echo "Welcome to LW" > /var/www/html/index.html
+# sudo systemctl restart httpd
+
+resource "null_resource" "null-resource-sss-h" {
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo fdisk -l",
+      "sudo mkfs.xfs /dev/<device-name>",
+      "sudo yum install httpd -y",
+      "cd /var/www/html",
+      "sudo mount <device-name> /var/www/html",
+      "sudo sh -c 'echo Welcome to LW > /var/www/html/index.html'",
+      "sudo systemctl restart httpd"
+    ]
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("c:/Path/to/your/key.pem")
+    host        = aws_instance.myweb.public_ip
+  }
+}
+
+resource "null_resource" "null-resource-local-chrome" {
+
+  provisioner "local-exec" {
+    command = "chrome http://${aws_instance.myweb.public_ip}/"
+  }
+}
+```
+
+
