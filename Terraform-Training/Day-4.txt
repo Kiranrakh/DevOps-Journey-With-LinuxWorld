@@ -1,0 +1,315 @@
+===============================================================
+                      THEORY & CONCEPTS
+===============================================================
+
+1. 🔧 What is Terraform?
+------------------------
+Terraform is an open-source Infrastructure as Code (IaC) tool created by HashiCorp. It allows you to define cloud infrastructure using simple declarative configuration files. It supports multiple cloud providers like AWS, Azure, and GCP.
+
+Benefits of Terraform:
+- Version control of infrastructure
+- Reproducibility across environments
+- Automation and reduced manual effort
+
+---
+
+2. ☁️ What is a VPC (Virtual Private Cloud)?
+-------------------------------------------
+A VPC is a logically isolated section of the AWS Cloud. It allows you to define:
+- Your own IP address range (CIDR block)
+- Subnets
+- Route tables
+- Internet gateways
+- NAT gateways
+- Security groups and more
+
+VPC gives full control over networking, traffic flow, and resource security.
+
+---
+
+3. 🔄 What is a CIDR Block?
+---------------------------
+CIDR (Classless Inter-Domain Routing) represents IP address ranges. For example, `10.0.0.0/16` defines a VPC with 65,536 IP addresses.
+
+Subnet CIDR examples:
+- `10.0.1.0/24` (256 IPs)
+- `10.0.2.0/24` (256 IPs)
+
+---
+
+4. 🧱 What is a Subnet?
+-----------------------
+Subnets divide your VPC into smaller IP ranges.
+
+Types of subnets:
+- **Public Subnet:** Can access the internet directly using an Internet Gateway.
+- **Private Subnet:** Does **not** have direct access to the internet. Uses NAT Gateway for outbound traffic.
+
+---
+
+5. 🌐 What is an Internet Gateway?
+----------------------------------
+An Internet Gateway (IGW) allows resources in a VPC to connect to the public internet. It must be attached to the VPC and associated with a **Route Table** for public subnets.
+
+---
+
+6. 📡 What is a NAT Gateway?
+----------------------------
+NAT (Network Address Translation) Gateway enables **private subnets** to access the internet (e.g., for downloading packages) without exposing them to inbound traffic from the internet.
+
+It uses:
+- Elastic IP (EIP)
+- Public Subnet for deployment
+
+---
+
+7. 🛣️ What is a Route Table?
+----------------------------
+Route Tables control traffic routing within your VPC.
+
+Examples:
+- Public route table: sends 0.0.0.0/0 traffic to the Internet Gateway.
+- Private route table: sends 0.0.0.0/0 traffic to the NAT Gateway.
+
+Each subnet must be associated with one route table.
+
+---
+
+8. 🔐 What is a Security Group?
+-------------------------------
+A Security Group acts as a virtual firewall for your EC2 instances. It defines:
+- **Inbound rules**: what traffic is allowed **to** the instance
+- **Outbound rules**: what traffic is allowed **from** the instance
+
+Example:
+Allow SSH (port 22) only from a specific IP.
+
+---
+
+9. 🖥️ What is an EC2 Instance in Private Subnet?
+-------------------------------------------------
+An EC2 instance launched in a private subnet has no public IP and cannot be accessed directly from the internet. You can:
+- SSH into it using a bastion host (jump box) in the public subnet
+- Allow limited internet access via NAT Gateway
+
+---
+
+10. ⚙️ Terraform Structure Overview
+-----------------------------------
+Terraform configuration consists of:
+- **Providers** (e.g., AWS)
+- **Resources** (VPC, Subnet, EC2, etc.)
+- **Variables** for reusability
+- **Outputs** for visibility
+- **State file** to track infrastructure changes
+
+===============================================================
+        TERRAFORM PROJECT: AWS VPC + EC2 INFRASTRUCTURE
+===============================================================
+
+📘 **Project Overview:**
+This project demonstrates how to build a fully functional AWS Virtual Private Cloud (VPC) using **Terraform**. It covers:
+
+✔️ Creating a project using Terraform  
+✔️ Setting up a VPC in AWS Cloud with CIDR block, DNS support  
+✔️ What is a Subnet — Public & Private Explained  
+✔️ Setting up Public & Private Subnets using Terraform  
+✔️ Attaching an Internet Gateway for external access  
+✔️ Understanding and Configuring Route Tables  
+✔️ NAT Gateway for Private Subnet internet access  
+✔️ Deploying EC2 inside Private Subnet with a custom Security Group  
+
+📌 **Key Concepts Covered:**
+- Infrastructure as Code (IaC)
+- Terraform basics and AWS provider setup
+- CIDR blocks and subnet planning
+- Route table associations
+- Secure EC2 instance provisioning in private subnet
+
+---
+
+===============================================================
+    CREATING A PROJECT USING TERRAFORM: AWS VPC & NETWORKING
+===============================================================
+
+provider "aws" {
+  region = var.region
+}
+
+variable "region" {
+  default = "ap-south-1"
+}
+
+variable "cidr-range-vpc" {
+  default = "10.0.0.0/16"
+}
+
+output "vpc-id-output" {
+  value = aws_vpc.main.id
+}
+
+resource "aws_vpc" "main" {
+  cidr_block           = var.cidr-range-vpc
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "main-vpc"
+  }
+}
+
+# SUBNETS (PUBLIC + PRIVATE)
+resource "aws_subnet" "public_subnet_1c" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.1.0/24"
+  availability_zone       = "ap-south-1c"
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "public-subnet-1c"
+  }
+}
+
+resource "aws_subnet" "private_subnet_1a" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "ap-south-1a"
+
+  tags = {
+    Name = "private-subnet-1a"
+  }
+}
+
+resource "aws_subnet" "private_subnet_2b" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.3.0/24"
+  availability_zone = "ap-south-1b"
+
+  tags = {
+    Name = "private-subnet-2b"
+  }
+}
+
+resource "aws_subnet" "private_subnet_3c" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.4.0/24"
+  availability_zone = "ap-south-1c"
+
+  tags = {
+    Name = "private-subnet-3c"
+  }
+}
+
+# INTERNET GATEWAY
+resource "aws_internet_gateway" "igw" {
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name = "main-igw"
+  }
+}
+
+# PUBLIC ROUTE TABLE
+resource "aws_route_table" "public_rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.igw.id
+  }
+
+  tags = {
+    Name = "public-route-table"
+  }
+}
+
+resource "aws_route_table_association" "public_rt_assoc" {
+  subnet_id      = aws_subnet.public_subnet_1c.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+# NAT GATEWAY & PRIVATE ROUTING
+resource "aws_eip" "nat_eip" {
+  vpc = true
+}
+
+resource "aws_nat_gateway" "nat" {
+  allocation_id = aws_eip.nat_eip.id
+  subnet_id     = aws_subnet.public_subnet_1c.id
+
+  depends_on = [aws_internet_gateway.igw]
+
+  tags = {
+    Name = "main-nat"
+  }
+}
+
+resource "aws_route_table" "private_rt" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.nat.id
+  }
+
+  tags = {
+    Name = "private-route-table"
+  }
+}
+
+resource "aws_route_table_association" "private_rt_assoc_1" {
+  subnet_id      = aws_subnet.private_subnet_1a.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_rt_assoc_2" {
+  subnet_id      = aws_subnet.private_subnet_2b.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+resource "aws_route_table_association" "private_rt_assoc_3" {
+  subnet_id      = aws_subnet.private_subnet_3c.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+# EC2 INSTANCE IN PRIVATE SUBNET
+resource "aws_security_group" "private_ec2_sg" {
+  name        = "private-ec2-sg"
+  description = "Allow SSH from specific IP"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["203.0.113.10/32"] # Replace with your IP
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "private-ec2-sg"
+  }
+}
+
+resource "aws_instance" "private_ec2" {
+  ami                         = "ami-0a0f1259dd1c90938"
+  instance_type               = "t2.micro"
+  subnet_id                   = aws_subnet.private_subnet_1a.id
+  vpc_security_group_ids      = [aws_security_group.private_ec2_sg.id]
+  associate_public_ip_address = false
+  key_name                    = "your-key-pair"
+
+  tags = {
+    Name = "private-ec2"
+  }
+}
+
+===============================================================
+           END OF FULL AWS VPC + EC2 PROJECT SETUP
+===============================================================
