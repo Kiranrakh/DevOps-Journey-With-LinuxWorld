@@ -1,0 +1,250 @@
+=============================================
+ Project Name: terraform-wordpress-3tier-aws
+=============================================
+
+Description:
+------------
+This project provisions a 3-tier AWS infrastructure using Terraform to deploy a WordPress application.
+It consists of a public subnet for the EC2-based web server and private subnets for the MySQL RDS database.
+All resources are created using Infrastructure as Code (IaC) principles.
+
+Infrastructure Components:
+---------------------------
+1. VPC with CIDR: 10.0.0.0/16
+2. 3 Public Subnets (spread across AZs)
+3. 3 Private Subnets (spread across AZs)
+4. Internet Gateway
+5. Route Table with association for public access
+6. EC2 Instance (Amazon Linux 2) in a public subnet:
+   - Installs Apache, PHP, Git
+   - Installs MariaDB client
+   - Clones WordPress from GitHub
+7. RDS MySQL Database in private subnet
+8. Security Groups:
+   - Web SG: HTTP (80), SSH (22)
+   - DB SG: MySQL (3306) from Web SG only
+9. Terraform Outputs:
+   - EC2 Public IP
+   - RDS Endpoint
+
+Provisioning:
+-------------
+- Uses 'null_resource' and 'remote-exec' to install software on EC2
+- Uses 'local-exec' to optionally open the app in Chrome
+
+Key Variables:
+--------------
+- Region: ap-south-1
+- AMI: Amazon Linux 2
+- Key Pair: kiran-key
+- DB Name: kirandb
+- DB Username: admin
+- DB Password: Kiran12345@
+
+
+*************************************************** main.tf *************************************
+
+provider "aws" {
+  region = var.aws_region
+}
+
+resource "aws_vpc" "kiran_vpc" {
+  cidr_block           = var.vpc_cidr
+  enable_dns_hostnames = true
+  tags = { Name = "kiran-vpc" }
+}
+
+resource "aws_internet_gateway" "kiran_igw" {
+  vpc_id = aws_vpc.kiran_vpc.id
+  tags = { Name = "kiran-igw" }
+}
+
+resource "aws_subnet" "kiran_public" {
+  count                   = 3
+  vpc_id                  = aws_vpc.kiran_vpc.id
+  cidr_block              = cidrsubnet(var.public_subnet_cidr_base, 4, count.index)
+  availability_zone       = element(var.azs, count.index)
+  map_public_ip_on_launch = true
+  tags = { Name = "kiran-public-subnet-${count.index + 1}" }
+}
+
+resource "aws_subnet" "kiran_private" {
+  count             = 3
+  vpc_id            = aws_vpc.kiran_vpc.id
+  cidr_block        = cidrsubnet(var.private_subnet_cidr_base, 4, count.index)
+  availability_zone = element(var.azs, count.index)
+  tags = { Name = "kiran-private-subnet-${count.index + 1}" }
+}
+
+resource "aws_route_table" "kiran_public_rt" {
+  vpc_id = aws_vpc.kiran_vpc.id
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.kiran_igw.id
+  }
+  tags = { Name = "kiran-public-rt" }
+}
+
+resource "aws_route_table_association" "public_rt_assoc" {
+  count          = 3
+  subnet_id      = aws_subnet.kiran_public[count.index].id
+  route_table_id = aws_route_table.kiran_public_rt.id
+}
+
+resource "aws_security_group" "kiran_web_sg" {
+  name   = "kiran-web-sg"
+  vpc_id = aws_vpc.kiran_vpc.id
+
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "kiran-web-sg" }
+}
+
+resource "aws_instance" "kiran_web" {
+  ami                         = var.ami_id
+  instance_type               = var.instance_type
+  subnet_id                   = aws_subnet.kiran_public[0].id
+  vpc_security_group_ids      = [aws_security_group.kiran_web_sg.id]
+  associate_public_ip_address = true
+  key_name                    = var.key_pair_name
+
+  tags = { Name = "kiran-wordpress-web" }
+}
+
+resource "null_resource" "wordpress_setup" {
+  depends_on = [aws_instance.kiran_web]
+
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y git httpd php",
+      "sudo amazon-linux-extras install -y mariadb10.5 php7.4",
+      "sudo git clone https://github.com/kiran/wordpress-app.git /tmp/wp",
+      "sudo cp -r /tmp/wp/* /var/www/html/",
+      "sudo chown -R apache:apache /var/www/html",
+      "sudo chmod -R 755 /var/www/html",
+      "sudo systemctl restart httpd",
+      "sudo systemctl enable httpd"
+    ]
+
+    connection {
+      type        = "ssh"
+      user        = "ec2-user"
+      private_key = file(var.private_key_path)
+      host        = aws_instance.kiran_web.public_ip
+    }
+  }
+}
+
+resource "null_resource" "null-resource-local-chrome" {
+  provisioner "local-exec" {
+    command = "chrome http://${aws_instance.kiran_web.public_ip}/"
+  }
+}
+
+resource "aws_security_group" "kiran_db_sg" {
+  name   = "kiran-db-sg"
+  vpc_id = aws_vpc.kiran_vpc.id
+
+  ingress {
+    from_port       = 3306
+    to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.kiran_web_sg.id]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_subnet_group" "kiran_db_subnet_group" {
+  name       = "kiran-db-subnet-group"
+  subnet_ids = aws_subnet.kiran_private[*].id
+
+  tags = { Name = "kiran-db-subnet-group" }
+}
+
+resource "aws_db_instance" "kiran_rds" {
+  identifier              = "kiran-rds-db"
+  engine                  = "mysql"
+  engine_version          = "8.0.36"
+  instance_class          = "db.t3.micro"
+  allocated_storage       = 20
+  name                    = var.db_name
+  username                = var.db_user
+  password                = var.db_password
+  db_subnet_group_name    = aws_db_subnet_group.kiran_db_subnet_group.name
+  vpc_security_group_ids  = [aws_security_group.kiran_db_sg.id]
+  skip_final_snapshot     = true
+
+  tags = { Name = "kiran-rds" }
+}
+
+****************************************** variables.tf ******************************
+
+variable "aws_region"         { default = "ap-south-1" }
+variable "vpc_cidr"           { default = "10.0.0.0/16" }
+variable "public_subnet_cidr_base"  { default = "10.0.1.0/24" }
+variable "private_subnet_cidr_base" { default = "10.0.10.0/24" }
+variable "azs"                { default = ["ap-south-1a", "ap-south-1b", "ap-south-1c"] }
+variable "ami_id"             { default = "ami-0f5ee92e2d63afc18" }
+variable "instance_type"      { default = "t2.micro" }
+variable "key_pair_name"      { default = "kiran-key" }
+variable "private_key_path"   { default = "~/.ssh/kiran-key.pem" }
+variable "db_name"            { default = "kirandb" }
+variable "db_user"            { default = "admin" }
+variable "db_password"        { default = "Kiran12345@" }
+
+
+
+************************************** outputs.tf ************************************
+
+output "web_instance_public_ip" {
+  value = aws_instance.kiran_web.public_ip
+}
+
+output "rds_endpoint" {
+  value = aws_db_instance.kiran_rds.endpoint
+}
+================*************************=======================***********************
+
+Usage:
+------
+1. Customize variable values in variables.tf
+2. Initialize and apply the infrastructure:
+
+   terraform init
+   terraform plan
+   terraform apply
+
+3. Use the output EC2 public IP to access the WordPress site
+
+Best Practices:
+---------------
+- Use remote S3 backend with DynamoDB for locking
+- Store secrets in AWS Secrets Manager
+- Use Load Balancer and Auto Scaling Group for production environments
+- Enable monitoring via CloudWatch
+```
