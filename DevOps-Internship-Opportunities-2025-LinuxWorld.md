@@ -15,7 +15,7 @@ Explore top companies currently hiring for **DevOps Intern** and **Fresher DevOp
 - **💼 Role**: DevOps Intern  
 - **📍 Location**: Bangalore / Remote  
 - **🕒 Type**: Internship  
-- **🎯 Placed Students**: *1*  
+- **🎯 Placed Students**: *1["Lovish Chandan"]*  
 - **🌐 Website**: [smallcase.com](https://www.smallcase.com)
 
 ---
