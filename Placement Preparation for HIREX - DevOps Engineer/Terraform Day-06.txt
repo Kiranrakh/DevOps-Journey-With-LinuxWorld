@@ -1,0 +1,197 @@
+====================================================================
+         🔧 Variables | Volumes | AWS CLI — DevOps Essentials
+====================================================================
+
+📦 SECTION 1: TERRAFORM VARIABLES
+--------------------------------------------------------------------
+🔰 What Are Variables?
+Variables in Terraform are used to:
+✅ Reuse values  
+✅ Make configurations dynamic  
+✅ Customize deployments
+
+There are 3 types of variables:
+1️⃣ Input Variables (`variable`)  
+2️⃣ Output Values (`output`)  
+3️⃣ Local Values (`locals`)
+
+--------------------------------------------------------------------
+📁 Example: Input Variables (variables.tf)
+```hcl
+variable "region" {
+  default = "us-east-1"
+}
+
+variable "instance_type" {
+  default = "t2.micro"
+}
+````
+
+📁 Example: Using Variables (main.tf)
+
+```hcl
+provider "aws" {
+  region = var.region
+}
+
+resource "aws_instance" "demo" {
+  instance_type = var.instance_type
+}
+```
+
+📁 Example: Output (outputs.tf)
+
+```hcl
+output "public_ip" {
+  value = aws_instance.demo.public_ip
+}
+```
+
+📁 Actual Values File (terraform.tfvars)
+
+```
+region        = "us-west-2"
+instance_type = "t3.micro"
+```
+
+\====================================================================
+🗃️ SECTION 2: DOCKER VOLUMES
+-----------------------------
+
+🔰 What Are Volumes?
+Volumes in Docker are used for **persistent data storage**
+outside the container's lifecycle.
+
+📌 Why use volumes?
+✅ Preserve data when containers are destroyed
+✅ Share data between containers
+✅ Manage host and container file separation
+
+---
+
+📁 Creating a Docker Volume:
+
+```
+docker volume create mydata
+```
+
+📁 Attaching Volume to Container:
+
+```
+docker run -d -v mydata:/app/data nginx
+```
+
+📁 Mounting Host Directory:
+
+```
+docker run -d -v /home/kiran/html:/usr/share/nginx/html nginx
+```
+
+📁 View Volumes:
+
+```
+docker volume ls
+```
+
+📁 Remove Volume:
+
+```
+docker volume rm mydata
+```
+
+📘 Best Practice:
+Use **named volumes** for containerized databases like MySQL/PostgreSQL.
+
+\====================================================================
+☁️ SECTION 3: AWS CLI (Command Line Interface)
+----------------------------------------------
+
+🔰 What is AWS CLI?
+AWS CLI is a **command-line tool** to manage AWS services.
+
+✅ Launch EC2, manage S3, IAM, Lambda, CloudWatch, etc.
+✅ Used in DevOps automation & scripts
+
+---
+
+📁 Install AWS CLI:
+Linux:
+
+```
+sudo apt install awscli
+```
+
+Windows:
+
+* Download from: [https://aws.amazon.com/cli/](https://aws.amazon.com/cli/)
+
+📁 Configure AWS CLI:
+
+```
+aws configure
+```
+
+It will ask for:
+
+* AWS Access Key ID
+* AWS Secret Access Key
+* Default region
+* Output format (json, table, text)
+
+---
+
+📁 Common AWS CLI Commands:
+
+🔹 EC2:
+
+```
+aws ec2 describe-instances
+```
+
+🔹 S3:
+
+```
+aws s3 ls
+aws s3 mb s3://mybucket
+aws s3 cp file.txt s3://mybucket/
+```
+
+🔹 IAM:
+
+```
+aws iam list-users
+```
+
+🔹 Lambda:
+
+```
+aws lambda list-functions
+```
+
+🔹 SNS:
+
+```
+aws sns list-topics
+```
+
+🔹 CloudWatch Logs:
+
+```
+aws logs describe-log-groups
+```
+
+\====================================================================
+📘 SUMMARY
+----------
+
+✔️ **Terraform Variables** = Dynamic & reusable configs
+✔️ **Docker Volumes** = Persistent storage across containers
+✔️ **AWS CLI** = Automate cloud tasks using terminal commands
+
+💡 All 3 tools are **essential** for building and automating
+modern DevOps pipelines and cloud workflows!
+
+🚀 Master them to become cloud-ready and automation-strong!
+
+\====================================================================
+

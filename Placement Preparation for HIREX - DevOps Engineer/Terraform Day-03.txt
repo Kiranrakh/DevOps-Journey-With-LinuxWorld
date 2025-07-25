@@ -1,0 +1,147 @@
+====================================================================
+                📘 HashiCorp Configuration Language (HCL)
+====================================================================
+
+🔰 WHAT IS HCL?
+--------------------------------------------------------------------
+HCL stands for **HashiCorp Configuration Language**.
+
+It is a domain-specific language (DSL) created by **HashiCorp** for
+writing infrastructure as code, primarily used with tools like:
+
+✅ Terraform  
+✅ Vault  
+✅ Consul  
+✅ Nomad
+
+💡 In Terraform, all `.tf` files are written in HCL.
+
+====================================================================
+🎯 FEATURES OF HCL
+--------------------------------------------------------------------
+✔️ Human-readable & clean syntax  
+✔️ JSON-compatible (can be converted to/from JSON)  
+✔️ Declarative (describe **what** you want, not **how** to do it)  
+✔️ Built-in functions and types  
+✔️ Supports variables, conditionals, and interpolation
+
+====================================================================
+📁 BASIC HCL STRUCTURE
+--------------------------------------------------------------------
+
+🔹 HCL = Blocks + Attributes + Arguments
+
+```hcl
+resource "aws_instance" "my_ec2" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+
+  tags = {
+    Name = "MyServer"
+  }
+}
+````
+
+📌 Breakdown:
+
+* `resource` → block type
+* `"aws_instance"` → provider + resource type
+* `"my_ec2"` → resource name (local identifier)
+* Inside `{}` → attributes (key-value pairs)
+
+\====================================================================
+🔧 COMMON BLOCK TYPES
+---------------------
+
+1️⃣ **provider**
+Defines which cloud/platform you're using
+
+```hcl
+provider "aws" {
+  region = "us-east-1"
+}
+```
+
+2️⃣ **resource**
+Creates infrastructure (e.g., EC2, S3, VPC)
+
+```hcl
+resource "aws_s3_bucket" "my_bucket" {
+  bucket = "my-devops-bucket"
+}
+```
+
+3️⃣ **variable**
+Declares input variables
+
+```hcl
+variable "instance_type" {
+  default = "t2.micro"
+}
+```
+
+4️⃣ **output**
+Prints useful data after `terraform apply`
+
+```hcl
+output "public_ip" {
+  value = aws_instance.my_ec2.public_ip
+}
+```
+
+\====================================================================
+🔤 DATA TYPES IN HCL
+--------------------
+
+✔️ string → "t2.micro"
+✔️ number → 80
+✔️ bool → true / false
+✔️ list → \["a", "b", "c"]
+✔️ map → { Name = "DevOps", Env = "Prod" }
+✔️ object → group of named attributes
+✔️ tuple → fixed-length list with mixed types
+
+\====================================================================
+🔁 INTERPOLATION IN HCL
+-----------------------
+
+Used to insert dynamic values inside strings:
+
+```hcl
+value = "${aws_instance.my_ec2.public_ip}"
+```
+
+Terraform 0.12+ supports simplified syntax:
+
+```hcl
+value = aws_instance.my_ec2.public_ip
+```
+
+\====================================================================
+⚙️ FUNCTIONS IN HCL
+-------------------
+
+Terraform includes built-in functions:
+
+🔹 `length(list)`
+🔹 `upper("text")`
+🔹 `file("file.txt")`
+🔹 `lookup(map, key, default)`
+🔹 `join(", ", list)`
+🔹 `cidrsubnet(cidr, newbits, netnum)`
+
+Used in expressions to manipulate data dynamically.
+
+\====================================================================
+📘 SUMMARY
+----------
+
+✔️ HCL is the core language behind Terraform
+✔️ Simple, declarative, human-readable
+✔️ Used to define infrastructure, variables, and outputs
+✔️ Supports expressions, loops (for\_each), conditionals, etc.
+✔️ Makes infrastructure code powerful and scalable
+
+💡 If you learn HCL, you unlock the power of Terraform!
+
+\====================================================================

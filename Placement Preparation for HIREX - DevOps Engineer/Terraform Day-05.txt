@@ -1,0 +1,126 @@
+====================================================================
+                     ⚙️ Terraform Provisioners
+====================================================================
+
+🔰 WHAT IS A PROVISIONER?
+--------------------------------------------------------------------
+A **provisioner** in Terraform is used to execute **scripts or commands**
+on a resource **after it has been created**.
+
+It helps with:
+✅ Bootstrapping servers  
+✅ Installing packages  
+✅ Copying files  
+✅ Configuring services (before tools like Ansible run)
+
+📌 Provisioners are often used with `aws_instance` or VM resources.
+
+💡 Example: Running `apt install nginx` on a VM **after** it's launched.
+
+====================================================================
+📦 TYPES OF PROVISIONERS
+--------------------------------------------------------------------
+
+1️⃣ **remote-exec**
+   - Runs commands on the remote machine via SSH
+
+```hcl
+provisioner "remote-exec" {
+  inline = [
+    "sudo apt update",
+    "sudo apt install -y nginx"
+  ]
+}
+````
+
+2️⃣ **local-exec**
+
+* Runs commands **locally** on the Terraform host machine
+
+```hcl
+provisioner "local-exec" {
+  command = "echo 'Server Created Successfully!' > server-log.txt"
+}
+```
+
+3️⃣ **file**
+
+* Uploads files from your local system to the remote machine
+
+```hcl
+provisioner "file" {
+  source      = "index.html"
+  destination = "/tmp/index.html"
+}
+```
+
+\====================================================================
+🧩 PROVISIONER USAGE EXAMPLE
+----------------------------
+
+```hcl
+resource "aws_instance" "web" {
+  ami           = "ami-0c55b159cbfafe1f0"
+  instance_type = "t2.micro"
+  key_name      = "mykey"
+  
+  provisioner "remote-exec" {
+    inline = [
+      "sudo yum install -y httpd",
+      "sudo systemctl start httpd"
+    ]
+  }
+
+  connection {
+    type        = "ssh"
+    user        = "ec2-user"
+    private_key = file("~/.ssh/id_rsa")
+    host        = self.public_ip
+  }
+}
+```
+
+🧠 Explanation:
+
+* Creates an EC2 instance
+* Connects over SSH using the key
+* Installs and starts Apache
+
+\====================================================================
+⚠️ WHEN TO USE PROVISIONERS
+---------------------------
+
+✅ Use provisioners only when:
+
+* No better way exists using resources/modules
+* You need to run temporary, one-time setup scripts
+
+🚫 Avoid provisioners when:
+
+* You can use **cloud-init** or **user-data**
+* You have **Ansible**, **Packer**, or **scripts baked into AMIs**
+
+💡 HashiCorp recommends **minimizing** the use of provisioners in favor of cleaner IaC.
+
+\====================================================================
+💡 BEST PRACTICES
+-----------------
+
+✔️ Use `null_resource` + provisioner for script-only tasks
+✔️ Keep provisioners **idempotent** (safe to re-run)
+✔️ Use **connection blocks** correctly for SSH setup
+✔️ Avoid hardcoding credentials or IPs
+✔️ Use `depends_on` when needed to control resource execution order
+
+\====================================================================
+📘 SUMMARY
+----------
+
+✔️ Provisioners run custom commands after resource creation
+✔️ Types: `remote-exec`, `local-exec`, `file`
+✔️ Useful for quick bootstrapping
+✔️ Should be used sparingly — not a replacement for config mgmt
+
+🚀 Provisioners = Quick post-setup tasks in Terraform!
+
+\====================================================================
