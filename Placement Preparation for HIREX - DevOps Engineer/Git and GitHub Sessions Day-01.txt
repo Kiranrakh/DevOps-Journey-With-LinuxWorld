@@ -1,0 +1,158 @@
+===============================================================
+             📁 Git: Introduction & Working Explained
+===============================================================
+
+🔰 WHAT IS GIT?
+---------------------------------------------------------------
+Git is a **distributed version control system** used to track 
+changes in source code during software development.
+
+📌 Key Features:
+✔️ Tracks file versions  
+✔️ Supports collaboration (multiple contributors)  
+✔️ Distributed — every user has a local copy  
+✔️ Fast, secure, open-source
+
+📁 Created by: Linus Torvalds (2005)
+
+Used by: GitHub, GitLab, Bitbucket, and more.
+
+---------------------------------------------------------------
+📌 WHY DO DEVOPS ENGINEERS USE GIT?
+---------------------------------------------------------------
+✅ Version control of infrastructure code  
+✅ Track changes in Ansible Playbooks, Terraform, Dockerfiles  
+✅ Collaborate in CI/CD pipelines  
+✅ Rollback to a previous working state  
+✅ GitOps: Sync Git state with production environments
+
+---------------------------------------------------------------
+⚙️ HOW GIT WORKS (SIMPLE FLOW)
+---------------------------------------------------------------
+
+Step-by-step Git workflow:
+
+1️⃣ **git init**  
+   → Initializes a new Git repository
+
+2️⃣ **git add**  
+   → Stages files for commit (marks for tracking)
+
+3️⃣ **git commit**  
+   → Saves a snapshot of changes to local repo
+
+4️⃣ **git status**  
+   → Shows current file state (staged, modified, etc.)
+
+5️⃣ **git log**  
+   → Shows commit history
+
+6️⃣ **git remote add origin <URL>**  
+   → Links your local repo with remote (like GitHub)
+
+7️⃣ **git push**  
+   → Uploads your commits to GitHub
+
+8️⃣ **git pull**  
+   → Fetches updates from remote to local repo
+
+---------------------------------------------------------------
+🗂️ GIT AREAS: WORKING DIR | STAGING | REPO
+---------------------------------------------------------------
+Git tracks files in **three areas**:
+
+📁 1. Working Directory:
+   - Where you edit files
+
+📁 2. Staging Area (Index):
+   - Files added with `git add`
+
+📁 3. Repository:
+   - Commits stored here permanently
+
+Flow:  
+Working Dir → `git add` → Staging → `git commit` → Repo
+
+---------------------------------------------------------------
+📌 COMMON GIT COMMANDS
+---------------------------------------------------------------
+🔹 Initialize:
+```
+
+git init
+
+```
+
+🔹 Track a file:
+```
+
+git add <filename>
+git add .    # Adds all files
+
+```
+
+🔹 Commit:
+```
+
+git commit -m "Initial commit"
+
+```
+
+🔹 Check status:
+```
+
+git status
+
+```
+
+🔹 View history:
+```
+
+git log
+
+```
+
+🔹 Remote setup & Push:
+```
+
+git remote add origin [https://github.com/user/repo.git](https://github.com/user/repo.git)
+git push -u origin main
+
+```
+
+🔹 Pull updates:
+```
+
+git pull origin main
+
+```
+
+🔹 Clone existing repo:
+```
+
+git clone [https://github.com/user/repo.git](https://github.com/user/repo.git)
+
+```
+
+---------------------------------------------------------------
+💡 TIPS FOR BEST PRACTICE
+---------------------------------------------------------------
+✅ Commit often with meaningful messages  
+✅ Use `.gitignore` to skip unwanted files  
+✅ Always pull before pushing  
+✅ Use branches for features/fixes  
+✅ Regularly push to remote
+
+---------------------------------------------------------------
+📘 SUMMARY
+---------------------------------------------------------------
+✔️ Git tracks code changes over time  
+✔️ Supports collaboration via GitHub/GitLab  
+✔️ Works locally and syncs with remotes  
+✔️ DevOps teams use Git to version control scripts, YAML files, etc.  
+✔️ It's the foundation of **GitOps**, **CI/CD**, and modern workflows
+
+🚀 Master Git = Master DevOps Foundations!
+
+===============================================================
+

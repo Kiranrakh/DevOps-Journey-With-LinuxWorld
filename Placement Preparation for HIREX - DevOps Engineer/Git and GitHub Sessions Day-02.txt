@@ -1,0 +1,162 @@
+=================================================================
+                Git Branching, Merging & GitHub Connection
+=================================================================
+
+🌱 BRANCHING IN GIT
+-----------------------------------------------------------------
+A **branch** is an independent line of development.
+
+💡 Use branches to:
+✅ Work on features independently  
+✅ Test code without affecting main branch  
+✅ Isolate bugs or experiments
+
+📌 Default branch: `main` or `master`
+
+---------------------------------------------------------------
+🔧 COMMON BRANCH COMMANDS
+---------------------------------------------------------------
+
+📁 Create a new branch:
+```
+
+git branch <branch-name>
+
+```
+
+📁 Switch to a branch:
+```
+
+git checkout <branch-name>
+
+```
+
+📁 Create and switch:
+```
+
+git checkout -b <branch-name>
+
+```
+
+📁 List all branches:
+```
+
+git branch
+
+```
+
+📁 Delete a branch (after merging):
+```
+
+git branch -d <branch-name>
+
+```
+
+💡 Tip: Keep your `main` branch stable and merge tested changes.
+
+=================================================================
+🔀 MERGING IN GIT
+-----------------------------------------------------------------
+**Merge** combines changes from one branch into another.
+
+🔸 Common use-case:
+  Feature branch → merge into → `main`
+
+📁 Steps:
+1. Checkout the target branch (e.g., `main`)
+```
+
+git checkout main
+
+```
+
+2. Merge the feature branch:
+```
+
+git merge <feature-branch-name>
+
+```
+
+3. Resolve conflicts if any (manual step)
+
+4. Commit the merge (if prompted)
+
+📌 Merge Conflict:
+- Happens when two branches modify the same part of the same file.
+- Git will mark the conflicting lines like this:
+
+```
+
+<<<<<<< HEAD
+your code here
+==============
+
+incoming code from branch
+
+> > > > > > > feature-branch
+
+```
+
+✅ Fix conflicts manually, then:
+```
+
+git add .
+git commit
+
+```
+
+=================================================================
+🌐 CONNECTING TO GITHUB
+-----------------------------------------------------------------
+You can connect your local Git repo to GitHub to:
+✅ Store it remotely  
+✅ Collaborate with others  
+✅ Set up CI/CD
+
+---------------------------------------------------------------
+🔹 STEP 1: Create a Repo on GitHub
+---------------------------------------------------------------
+1. Go to: https://github.com  
+2. Click "New Repository"  
+3. Give it a name (e.g., `my-devops-repo`)  
+4. Do NOT initialize with README (if pushing from local)
+
+---------------------------------------------------------------
+🔹 STEP 2: Connect Local to Remote
+---------------------------------------------------------------
+```
+
+git remote add origin [https://github.com/username/repo.git](https://github.com/username/repo.git)
+
+```
+
+🔹 Push your local code:
+```
+
+git push -u origin main
+
+```
+
+💡 `-u` sets upstream so future `git push` works without branch.
+
+---------------------------------------------------------------
+🔹 STEP 3: Pull from GitHub
+---------------------------------------------------------------
+Always pull before pushing to avoid conflicts:
+```
+
+git pull origin main
+
+```
+
+---------------------------------------------------------------
+📘 SUMMARY
+---------------------------------------------------------------
+✔️ Branching = isolate changes safely  
+✔️ Merging = bring features together  
+✔️ GitHub = remote repo for collaboration  
+✔️ Use `pull`, `push`, `merge` daily in real DevOps projects
+
+🚀 Git + GitHub = Version Control Superpowers!
+
+=================================================================
