@@ -1,0 +1,115 @@
+==========================================
+📘 Prometheus - Overview, Architecture, Use Cases & Setup
+==========================================
+
+🔹 1. OVERVIEW:
+------------------
+Prometheus is an open-source **monitoring and alerting toolkit** designed for reliability and scalability.
+It’s widely used in DevOps, SRE, and Cloud-Native environments.
+
+✅ Prometheus = Monitoring (metrics) + Alerting
+
+Prometheus works by collecting metrics from configured targets at given intervals, storing them in a time-series database, and allowing querying and alerting using PromQL.
+
+🔹 2. FEATURES OF PROMETHEUS:
+------------------------------
+- Time-series data collection and storage
+- PromQL: Flexible and powerful query language
+- Pull-based model over HTTP
+- Service discovery for dynamic environments (e.g., Kubernetes)
+- Integrated alerting with Alertmanager
+- Visualization via built-in UI or Grafana
+- Lightweight and self-contained
+
+🔹 3. PROMETHEUS ARCHITECTURE:
+-------------------------------
+Components:
+- **Prometheus Server**: Core engine to collect and store metrics
+- **Exporters (Targets)**: Apps exposing metrics at /metrics endpoint
+- **Push Gateway**: Optional push support for short-lived jobs
+- **Alertmanager**: Manages alert notifications
+- **Grafana**: For advanced dashboards (external)
+
+➡️ Real-Time Use Cases:
+- Monitoring EC2 CPU/Memory/Disk via node_exporter
+- Tracking container metrics in Docker/Kubernetes (via cAdvisor)
+- Alerting when app response time spikes
+- Service uptime using blackbox_exporter
+
+🔹 4. MONITORING vs LOGGING:
+-----------------------------
+- Monitoring = Data collection of metrics (CPU, RAM, traffic, etc.)
+- Logging tools = Splunk, ELK Stack → For full logs (errors, events)
+
+🔹 5. HANDS-ON PRACTICAL SETUP ON AWS (Amazon Linux):
+-------------------------------------------------------
+✅ Step-by-step to install Prometheus & node_exporter
+
+🔸 EC2 SETUP:
+- Launch EC2 Amazon Linux instance
+- Security Group: Allow All traffic (0.0.0.0/0) temporarily
+- Enable SSH for all
+- SSH into instance
+
+🔸 PROMETHEUS INSTALLATION:
+```bash
+# Download Prometheus (copy Linux tar.gz link from website)
+wget <paste_prometheus_download_link_here>
+
+# Extract
+tar -xvzf prometheus-*.tar.gz
+cd prometheus-*/
+
+# Start Prometheus
+./prometheus
+
+# Access dashboard: http://<EC2_PUBLIC_IP>:9090
+````
+
+🔸 DASHBOARD VERIFICATION:
+
+* Go to "Status" > "Targets" → Shows running targets (default: localhost)
+
+🔸 WHAT ARE TARGETS?
+Targets are any systems exposing metrics: Docker, DB, Node.js, Full OS, etc.
+Currently, we are monitoring the same Linux OS.
+
+🔸 ADDING REMOTE LINUX OS AS TARGET (Node Exporter):
+
+1. Launch another EC2 instance → Open all traffic
+2. SSH into it
+3. Install node\_exporter:
+
+```bash
+wget <node_exporter_download_link>
+tar -xvzf node_exporter-*.tar.gz
+cd node_exporter-*/
+./node_exporter
+```
+
+4. Visit: http\://\<Target\_EC2\_Public\_IP>:9100/metrics → Metrics visible
+
+🔸 UPDATE Prometheus CONFIG TO ADD NEW TARGET:
+
+```yaml
+# Edit prometheus.yml on Prometheus server
+scrape_configs:
+  - job_name: 'node_exporter_remote'
+    static_configs:
+      - targets: ['<Target_EC2_Public_IP>:9100']
+```
+
+🔸 RESTART Prometheus:
+
+```bash
+./prometheus --config.file=prometheus.yml
+```
+
+🔸 REFRESH UI:
+
+* Dashboard → Status > Targets → New node\_exporter target appears
+
+\==========================================
+🔚 Summary:
+Prometheus is ideal for real-time metrics monitoring, alerting, and troubleshooting in DevOps pipelines. With node\_exporter and service discovery, it scales well in cloud environments like AWS and Kubernetes.
+=================================================================================================================================================================================================================
