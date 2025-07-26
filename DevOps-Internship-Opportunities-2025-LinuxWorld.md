@@ -15,7 +15,7 @@ Explore top companies currently hiring for **DevOps Intern** and **Fresher DevOp
 - **💼 Role**: DevOps Intern  
 - **📍 Location**: Bangalore / Remote  
 - **🕒 Type**: Internship  
-- **🎯 Placed Students**: *1["Lovish Chandan"]*  
+- **🎯 Placed Students**: **1["Lovish Chandan"]**  
 - **🌐 Website**: [smallcase.com](https://www.smallcase.com)
 
 ---
@@ -25,7 +25,7 @@ Explore top companies currently hiring for **DevOps Intern** and **Fresher DevOp
 - **💼 Role**: DevOps Intern  
 - **📍 Location**: Noida  
 - **🕒 Type**: Internship  
-- **🎯 Placed Students**: *2*  
+- **🎯 Placed Students**: **2**  
 - **🌐 Website**: [ongraph.com](https://www.ongraph.com)
 
 ---
@@ -45,7 +45,7 @@ Explore top companies currently hiring for **DevOps Intern** and **Fresher DevOp
 - **💼 Role**: Cloud-DevOps Intern  
 - **📍 Location**: Bangalore / Remote  
 - **🕒 Type**: Internship  
-- **🎯 Placed Students**: *1*  
+- **🎯 Placed Students**: **1**  
 - **🌐 Website**: [maistering.com](https://www.maistering.com)
 
 ---
