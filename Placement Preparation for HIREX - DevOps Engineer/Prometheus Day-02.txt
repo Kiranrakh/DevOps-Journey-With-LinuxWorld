@@ -1,0 +1,214 @@
+====================================================================
+📘 FULLY DETAILED & EXPLANATORY PROMETHEUS HANDS-ON GUIDE (Day 1 & 2)
+====================================================================
+
+🔹 WHAT IS PROMETHEUS?
+------------------------
+Prometheus is a powerful open-source **monitoring and alerting toolkit** designed for recording real-time metrics in a time-series database.
+
+It’s widely used in DevOps, SRE, and Cloud-native environments.
+
+Key Capabilities:
+- Monitor CPU, memory, network, container stats, etc.
+- Collect data using HTTP pull-based mechanism
+- Support PromQL for data querying
+- Trigger alerts (via Alertmanager)
+
+====================================================
+🧠 PROMETHEUS ARCHITECTURE (ASCII DIAGRAM VIEW)
+====================================================
+
+                        +--------------------+
+                        |      Grafana       |      <- Visualization Layer
+                        +----------+---------+
+                                   |
+                        +----------v----------+
+                        |  Prometheus Server  |  <- Core Engine
+                        |---------------------|
+                        |  TSDB (Storage)     |
+                        |  PromQL Engine      |
+                        +----------+----------+
+                                   |
+       +---------------------------+-----------------------------+
+       |                           |                             |
++------v--------+         +--------v---------+         +---------v---------+
+| Node Exporter |         | Docker Metrics   |         | Custom Exporter   |
+| (9100/metrics)|         | (9323/metrics)   |         | (App /metrics)     |
++---------------+         +------------------+         +--------------------+
+
+----------------------------------------------------
+🔹 DAY 1: SETTING UP PROMETHEUS TO MONITOR A LINUX EC2
+----------------------------------------------------
+
+✅ Step 1: Launch EC2 Instance (Amazon Linux 2)
+-----------------------------------------------
+- Go to AWS Console → EC2 → Launch Instance
+- OS: Amazon Linux 2
+- Instance Type: t2.micro or higher
+- Configure Security Group:
+    - Allow **All traffic** (temporarily for demo)
+    - SSH from My IP (port 22)
+- Launch and connect via SSH
+
+✅ Step 2: Install Prometheus
+------------------------------
+1. Go to: https://prometheus.io/download/
+2. Copy the latest tar.gz link for Linux (64-bit)
+3. In EC2 terminal:
+   ```bash
+   wget https://github.com/prometheus/prometheus/releases/latest/download/prometheus-*.tar.gz
+   tar -xvzf prometheus-*.tar.gz
+   cd prometheus-*
+   ./prometheus
+````
+
+## ✅ Step 3: Access Prometheus UI
+
+* Open browser: `http://<EC2_PUBLIC_IP>:9090`
+* Go to **Status > Targets** → View all scrape targets
+
+## ✅ Step 4: Understanding “Targets”
+
+* A **target** is any system exposing `/metrics` (via HTTP)
+  Examples:
+
+  * node\_exporter for OS metrics
+  * Docker for container stats
+  * Custom applications
+
+## ✅ Step 5: Monitor Another Linux Instance Using node\_exporter
+
+1. Launch a new EC2 instance → Allow all ports (0.0.0.0/0)
+2. SSH into the target EC2
+3. Run:
+
+   ```bash
+   wget https://github.com/prometheus/node_exporter/releases/latest/download/node_exporter-*.tar.gz
+   tar -xvzf node_exporter-*.tar.gz
+   cd node_exporter-*
+   ./node_exporter
+   ```
+4. Verify: Visit `http://<TARGET_PUBLIC_IP>:9100/metrics`
+
+## ✅ Step 6: Connect New Target to Prometheus
+
+On Prometheus EC2 instance, edit `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'node_target'
+    static_configs:
+      - targets: ['<TARGET_PUBLIC_IP>:9100']
+```
+
+Then restart Prometheus:
+
+```bash
+./prometheus --config.file=prometheus.yml
+```
+
+Return to Prometheus UI → Status → Targets → You’ll see new target added.
+
+---
+
+## 🔹 DAY 2: MONITORING DOCKER METRICS ON ANOTHER INSTANCE
+
+## ✅ Step 1: Launch Docker Host EC2
+
+* Amazon Linux or Ubuntu
+* Allow all ports in Security Group
+* SSH into it
+
+## ✅ Step 2: Install Docker
+
+```bash
+sudo yum install docker -y
+sudo systemctl start docker
+sudo systemctl enable docker
+```
+
+## ✅ Step 3: Enable Docker Metrics for Prometheus
+
+Edit Docker config file:
+
+```bash
+sudo vim /etc/docker/daemon.json
+```
+
+Paste this JSON:
+
+```json
+{
+  "metrics-addr" : "0.0.0.0:9323",
+  "experimental" : true
+}
+```
+
+Restart Docker:
+
+```bash
+sudo systemctl restart docker
+```
+
+## ✅ Step 4: Confirm Metrics Available
+
+Visit in browser: `http://<DOCKER_PUBLIC_IP>:9323/metrics`
+
+## ✅ Step 5: Run Docker Containers for Activity
+
+```bash
+docker pull centos && docker run -dit --name container-1 centos
+docker pull nginx && docker run -dit --name container-2 nginx
+```
+
+## ✅ Step 6: Add Docker Target to Prometheus
+
+On Prometheus server, edit `prometheus.yml`:
+
+```yaml
+- job_name: 'docker_host'
+  static_configs:
+    - targets: ['<DOCKER_PUBLIC_IP>:9323']
+      labels:
+        region: 'ap-south-1'
+        team: 'DevOps'
+        env: 'demo'
+```
+
+Then restart Prometheus again:
+
+```bash
+./prometheus --config.file=prometheus.yml
+```
+
+---
+
+## 🔍 WHAT IS PromQL?
+
+**PromQL** stands for **Prometheus Query Language**. It allows you to query and filter the time-series metrics Prometheus collects.
+
+✅ Common Examples:
+
+* `up` → List of all live targets (1 = up, 0 = down)
+* `rate(http_requests_total[5m])` → HTTP request rate per 5 mins
+* `node_cpu_seconds_total` → Total CPU time
+* `node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes` → Memory usage %
+
+✅ PromQL is used in:
+
+* Grafana dashboards
+* Alert rules
+* Troubleshooting
+
+\====================================================
+📌 FINAL SUMMARY
+================
+
+✔ Prometheus provides end-to-end infrastructure and app monitoring
+✔ It collects, stores, and analyzes time-series data via HTTP endpoints
+✔ Setup involves Prometheus Server + Exporters + Targets
+✔ Docker, Linux, and applications can expose metrics
+✔ PromQL enables deep observability and alerting
+✔ Easy to extend using Alertmanager & Grafana dashboards
+
+```
