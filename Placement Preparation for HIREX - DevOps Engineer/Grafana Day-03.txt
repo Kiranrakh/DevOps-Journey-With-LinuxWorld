@@ -1,0 +1,204 @@
+==================================================================
+📅 DAY 3: MONITORING MYSQL WITH GRAFANA ON AWS EC2
+==================================================================
+
+🎯 WHAT I LEARNED:
+Today, I deployed and connected a MySQL database to Grafana using AWS EC2, exposed useful metrics, and added Prometheus-compatible custom exporters in Python.
+
+==================================================================
+🗺️ OVERALL ARCHITECTURE
+==================================================================
+
+                +---------------------+
+                |   Grafana Dashboard |
+                |   (Port 3000)       |
+                +---------+-----------+
+                          |
+                Uses Data Source (MySQL)
+                          |
+         +----------------+------------------+
+         |                                   |
++-------------------+         +-----------------------------+
+|     MySQL Server  |         |  Python App (Custom Metrics)|
+|  (Port 3306 + 8080)|        |  exposes /metrics           |
++-------------------+         +-----------------------------+
+         |
+  +------------------------+
+  |  my2 Database with     |
+  |  monitoring tables     |
+  +------------------------+
+
+==================================================================
+🧱 STEP 1: INSTALL MYSQL ON EC2
+==================================================================
+# Repository + installation
+sudo yum install https://dev.mysql.com/get/mysql80-community-release-el7-5.noarch.rpm -y
+sudo yum install mysql-server -y
+sudo systemctl start mysqld
+sudo cat /var/log/mysqld.log
+sudo mysql_secure_installation
+
+🧠 Notes:
+- This installs MySQL 8.x
+- You’ll get a temporary password to change
+
+==================================================================
+📊 STEP 2: ADD METRICS TABLES
+==================================================================
+
+                  MySQL EC2
+                +------------+
+                |  my2 DB    |
+                |  status    |
+                |  innodb    |
+                +------------+
+
+wget https://raw.githubusercontent.com/meob/my2collector/master/my2_80.sql
+nano my2_80.sql  # Uncomment last 3 lines
+mysql -u root -p < my2_80.sql
+
+Verify:
+mysql> use my2;  
+mysql> show tables;  
+mysql> select * from status;
+
+==================================================================
+🔓 STEP 3: ENABLE REMOTE MYSQL ACCESS
+==================================================================
+sudo vim /etc/my.cnf
+
+[mysqld]
+event_scheduler=ON
+bind-address=0.0.0.0
+
+sudo systemctl restart mysqld
+
+Diagram:
+
+        [ GRAFANA ]         ---> Remote connection over port 3306
+            |
+            v
+       [ MYSQL EC2 ]
+      (bind-address = 0.0.0.0)
+
+==================================================================
+👤 STEP 4: GRAFANA MYSQL USER
+==================================================================
+mysql -u root -p
+> CREATE USER 'grafanauser'@'%' IDENTIFIED BY 'Redhat@123zxc';
+> GRANT SELECT ON my2.* TO 'grafanauser'@'%';
+> FLUSH PRIVILEGES;
+
+✅ Read-only access is now enabled for Grafana.
+
+==================================================================
+📈 STEP 5: INSTALL GRAFANA
+==================================================================
+sudo yum install grafana -y
+sudo systemctl start grafana-server
+sudo systemctl enable grafana-server
+
+🌐 Access Grafana UI:
+http://<EC2_IP>:3000  
+Username: admin  
+Password: admin
+
+==================================================================
+🔌 STEP 6: ADD MYSQL AS DATASOURCE
+==================================================================
+
+     Grafana Data Source
+     +---------------------+
+     | Name: MySQL-Monitor |
+     | Type: MySQL         |
+     | Host: EC2_IP:3306   |
+     | DB: my2             |
+     | User/Pass           |
+     +---------------------+
+
+Click “Save & Test”
+
+==================================================================
+📊 STEP 7: IMPORT DASHBOARD (ID: 7991)
+==================================================================
+Go to: Dashboard → Import → Paste ID `7991`  
+Select MySQL data source  
+Click Import ✔️
+
+✅ You now see a beautiful MySQL monitoring dashboard.
+
+==================================================================
+🐍 STEP 8: CUSTOM METRICS WITH PYTHON
+==================================================================
+
+Diagram:
+
+      [ Prometheus ] <--- Scrapes --- [ Python Exporter ]
+                                         |
+                                exposes metrics on :8080
+
+Install:
+pip3 install prometheus-client
+
+mysqlapp.py:
+```python
+from prometheus_client import start_http_server, Summary
+import time
+
+REQUEST_TIME = Summary('req_process_sec', 'Time spent processing request')
+
+@REQUEST_TIME.time()
+def mysqlapp(t):
+    time.sleep(t)
+
+if __name__ == '__main__':
+    start_http_server(8080)
+    while True:
+        mysqlapp(2)
+````
+
+Run:
+python3 mysqlapp.py
+
+\==================================================================
+📡 STEP 9: ADD EXPORTER TO PROMETHEUS
+=====================================
+
+prometheus.yml:
+
+```yaml
+- job_name: 'mysql_python_exporter'
+  static_configs:
+    - targets: ['<EC2_IP>:8080']
+```
+
+Reload:
+kill -HUP \$(pgrep prometheus)
+
+\==================================================================
+📊 STEP 10: CUSTOM SQL DASHBOARDS
+=================================
+
+Grafana:
+→ New Dashboard → Add Panel
+→ Choose MySQL-Monitor
+→ Use SQL like:
+
+```sql
+SELECT * FROM status WHERE variable_name='Threads_connected';
+```
+
+→ Visualize with graph or gauge
+→ Save Dashboard: `MySQL Custom Monitoring`
+
+\==================================================================
+✅ FINAL OUTCOME
+===============
+
+✔️ MySQL monitored via Grafana using a custom data source
+✔️ Real-time dashboards imported + custom visualizations built
+✔️ Python + Prometheus used to create exporter
+✔️ Remote secure database access configured
+✔️ Learned how to visualize SQL data in Grafana
+
+
